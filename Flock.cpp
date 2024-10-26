@@ -20,7 +20,7 @@
 
 		while (m_window.isOpen())
 		{
-			//pollEvents();
+			pollEvents();
 			update();
 			render();
 		}
@@ -43,8 +43,12 @@
 				all_boids.push_back(b);
 			}
 
+				if (event.type == sf::Event::Closed|| (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
+				{
+					m_window.close();
+				}
+			}
 
-		}
 	}
 void Flock::createBoids()
 	{
@@ -100,14 +104,7 @@ void Flock::createBoids()
 		}
 
 		m_window.display();
-		sf::Event event;
-		while (m_window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed|| (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
-			{
-				m_window.close();
-			}
-		}
+
 	}
 
 	void Flock::checkBoundaries(Boid& boid)
