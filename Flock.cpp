@@ -21,6 +21,7 @@
 		while (m_window.isOpen())
 		{
 			pollEvents();
+			//updateTest();
 			update();
 			render();
 		}
@@ -90,6 +91,38 @@ void Flock::createBoids()
 
 			boid.body.setPosition(p +boid.velocity);
 
+		}
+	}
+void Flock::updateTest()
+	{
+
+		std::vector<sf::Vector2<float>> v;
+
+		int i = 0;	// Update boids
+		for (auto& boid : all_boids)
+		{
+
+			// Add the rules to the velocity of the boid
+			v.push_back(boid.velocity + cohesion(boid) + alignment(boid) + separation(boid));
+
+			float spd =utility::length(v[i]);
+			if (spd>maxspeed) {
+				v[i] = v[i]*maxspeed/spd;
+			}
+			if(spd<minspeed) {
+				v[i] = v[i]*minspeed/spd;
+			}
+
+			i++;
+
+		}
+		i =0;
+		for(auto&boid : all_boids){
+			boid.velocity = v[i];
+			checkBoundaries(boid);
+			sf::Vector2f p = boid.body.getPosition();
+			boid.body.setPosition(p +boid.velocity);
+			i++;
 		}
 	}
 

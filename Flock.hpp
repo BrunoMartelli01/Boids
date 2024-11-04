@@ -5,8 +5,8 @@ const int WIDTH =desktopTemp.width*0.8;
 const int HEIGHT = desktopTemp.height*0.8;
 const float maxspeed= 6;
 const float minspeed = 3;
-#define BOID_SIZE 7.f
 
+#define BOID_SIZE 7.f
     struct Boid
     {
         Boid(const sf::CircleShape& body, const sf::Vector2f& velocity = sf::Vector2f((rand()%(2*(int)maxspeed))-maxspeed, (rand()%(2*(int)maxspeed))-maxspeed) ):
@@ -30,6 +30,7 @@ const float minspeed = 3;
         void render();
         void pollEvents();
         void update();
+        void updateTest();
         void checkBoundaries(Boid& boid);
         void createBoids();
         // Rules
@@ -47,6 +48,6 @@ const float minspeed = 3;
         float protectedRange = 20;
 
         float avoidFactor = 0.05;
-        float margin = 0.01;
-        float nBoids = 300;
+        float margin = 0.2;
+        float nBoids = 500;
     };
