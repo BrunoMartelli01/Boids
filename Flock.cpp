@@ -90,6 +90,7 @@ void Flock::createBoids()
 
 	void Flock::update()
 	{
+#pragma omp parallel for
 		// Update boids
 		for (auto& boid : all_boids)
 		{

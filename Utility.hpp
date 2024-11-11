@@ -11,10 +11,19 @@ namespace utility
     {
         return sqrtf(((v2.x - v1.x) * (v2.x - v1.x)) + ((v2.y - v1.y) * (v2.y - v1.y)));
     }
+    inline float distance(const float x1, const float y1, const float x2, const float y2)
+    {
+        return sqrtf(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
+    }
 
     inline float length(const sf::Vector2f& v)
     {
         return sqrtf(v.x * v.x + v.y * v.y);
+    }
+
+    inline float length(const float x, const float y)
+    {
+        return sqrtf(x * x + y * y);
     }
 
 

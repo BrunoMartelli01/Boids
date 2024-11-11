@@ -1,6 +1,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <omp.h>
+#include <vector>
+#include <array>
 namespace parallel {
     const sf::VideoMode desktopTemp = sf::VideoMode::getDesktopMode();
     const float maxspeed= 6;
@@ -9,8 +11,9 @@ namespace parallel {
 #define BOID_SIZE 7.f
     struct Boid_SoF
     {
-        std::vector<sf::CircleShape> bodies;
-        std::vector<sf::Vector2f> velocities;
+        std::vector<float> positions;
+        std::vector<float> velocities;
+        std::vector<sf::CircleShape> shapes;
 
     };
 
@@ -30,12 +33,12 @@ namespace parallel {
         void pollEvents();
         void update();
         void updateTest();
-        void checkBoundaries(sf::CircleShape& body , sf::Vector2f& velocity);
+        void checkBoundaries(Boid_SoF  &all_boids, int index_boid);
         void createBoids();
         // Rules
-        sf::Vector2f alignment(const sf::CircleShape& body , const sf::Vector2f& velocity , int pos_boid);
-        sf::Vector2f cohesion(const sf::CircleShape& body , int pos_boid);
-        sf::Vector2f separation(const sf::CircleShape& body , int pos_boid);
+        std::array<float,2>  alignment( float px,  float py,  float vx,  float vy   , int index_boid);
+        std::array<float,2>  cohesion( float px, float py, int index_boid);
+        std::array<float,2>  separation(float px, float py, int index_boid);
 
 
         sf::RenderWindow m_window;

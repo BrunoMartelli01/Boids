@@ -77,179 +77,209 @@ void Flock::createBoids()
 	{
 
 	for (int i = 0; i < nBoids; i++){
-		sf::CircleShape body = sf::CircleShape(BOID_SIZE,  3);
-		utility::centerOrigin(body);
-		body.setPosition(rand()%width, rand()%height);
-		body.setFillColor(sf::Color::Red);
-		all_boids.bodies.push_back(body);
-		sf::Vector2f velocity = sf::Vector2f((rand()%(2*(int)maxspeed))-maxspeed, (rand()%(2*(int)maxspeed))-maxspeed)
-		all_boids.velocities.push_back(velocity);
+		sf::CircleShape shape = sf::CircleShape(BOID_SIZE,  3);
+		utility::centerOrigin(shape);
+		shape.setFillColor(sf::Color::Red);
+
+		all_boids.shapes.push_back(shape);
+
+		all_boids.positions.push_back(rand()%width);  //x
+		all_boids.positions.push_back(rand()%height); //y
+
+
+		all_boids.velocities.push_back((rand()%(2*(int)maxspeed))-maxspeed); //x
+		all_boids.velocities.push_back((rand()%(2*(int)maxspeed))-maxspeed); //y
+
+
 	}
 
 
 		}
 
 
-	void Flock::update()
-	{
+	void Flock::update() {
 		// Update boids
 #pragma omp parallel for
 		for (int i  = 0; i < nBoids; i++)//posso usare nboids perché ho tolto la possibilità di inserirli a mano
 		{
-
-
 			// Add the rules to the velocity of the boid
-			all_boids.velocities[i] += cohesion(boid , i) + alignment(boid , i) + separation(boid , i);
+			float px = all_boids.positions[i*2];
+			float py = all_boids.positions[i*2+1];
+			float vx = all_boids.velocities[i*2];
+			float vy = all_boids.velocities[i*2+1];
+			std::array<float,2 > c = cohesion(px, py, i);
+			std::array<float,2 > a = alignment(px, py,vx, vy, i);
+			std::array<float,2 > s = separation(px,py , i);
+			all_boids.velocities[i*2] += c[0] + a[0] + s[0];
+			all_boids.velocities[i*2+1] += c[1] + a[1] + s[1];
 
 
-
-			float spd =utility::length(all_boids.velocities[i]);
+			float spd =utility::length(all_boids.velocities[i*2],all_boids.velocities[i*2+1]);
 			if (spd>maxspeed) {
-				all_boids.velocities[i] = all_boids.velocities[i]*maxspeed/spd;
+				all_boids.velocities[i*2] = all_boids.velocities[i*2]*maxspeed/spd;
+
+				all_boids.velocities[i*2+1] = all_boids.velocities[i*2+1]*maxspeed/spd;
 			}
 			if(spd<minspeed) {
-				all_boids.velocities[i] = all_boids.velocities[i]*minspeed/spd;
+				all_boids.velocities[i*2] = all_boids.velocities[i*2]*minspeed/spd;
+				all_boids.velocities[i*2+1] = all_boids.velocities[i*2+1]*minspeed/spd;
 			}
-			sf::Vector2f p = all_boids.bodies[i].getPosition();
 
-			checkBoundaries( all_boids.bodies[i],  all_boids.velocities[i] );
 
-			all_boids.bodies[i].setPosition(p + all_boids.velocities[i]);
+			checkBoundaries( all_boids,  i);
+
+			all_boids.positions[i*2]= px + all_boids.velocities[i*2];
+			all_boids.positions[i*2+1]= py + all_boids.velocities[i*2+1];
 
 		}
 	}
-void Flock::updateTest()
-	{
-
-		std::vector<sf::Vector2<float>> v;
-
-		int i = 0;	// Update boids
-		for (auto& boid : all_boids)
-		{
-
-			// Add the rules to the velocity of the boid
-			v.push_back(boid.velocity + cohesion(boid) + alignment(boid) + separation(boid));
-
-			float spd =utility::length(v[i]);
-			if (spd>maxspeed) {
-				v[i] = v[i]*maxspeed/spd;
-			}
-			if(spd<minspeed) {
-				v[i] = v[i]*minspeed/spd;
-			}
-
-			i++;
-
-		}
-		i =0;
-		for(auto&boid : all_boids){
-			boid.velocity = v[i];
-			checkBoundaries(boid);
-			sf::Vector2f p = boid.body.getPosition();
-			boid.body.setPosition(p +boid.velocity);
-			i++;
-		}
-	}
+// void Flock::updateTest()
+// 	{
+//
+// 		std::vector<sf::Vector2<float>> v;
+//
+// 		int i = 0;	// Update boids
+// 		for (auto& boid : all_boids)
+// 		{
+//
+// 			// Add the rules to the velocity of the boid
+// 			v.push_back(boid.velocity + cohesion(boid) + alignment(boid) + separation(boid));
+//
+// 			float spd =utility::length(v[i]);
+// 			if (spd>maxspeed) {
+// 				v[i] = v[i]*maxspeed/spd;
+// 			}
+// 			if(spd<minspeed) {
+// 				v[i] = v[i]*minspeed/spd;
+// 			}
+//
+// 			i++;
+//
+// 		}
+// 		i =0;
+// 		for(auto&boid : all_boids){
+// 			boid.velocity = v[i];
+// 			checkBoundaries(boid);
+// 			sf::Vector2f p = boid.body.getPosition();
+// 			boid.body.setPosition(p +boid.velocity);
+// 			i++;
+// 		}
+// 	}
 
 	void Flock::render()
 	{
 		m_window.clear();
 
 		// Draw boids
-		for (const auto& boid : all_boids)
+		for (int i = 0; i < nBoids; i++)
 		{
-			m_window.draw(boid.body);
+			all_boids.shapes[i].setPosition(all_boids.positions[i*2], all_boids.positions[i*2+1]);
+			m_window.draw(all_boids.shapes[i]);
 		}
+
 
 		m_window.display();
 
 	}
 
-	void Flock::checkBoundaries( sf::CircleShape& body , sf::Vector2f& velocity)
+	void Flock::checkBoundaries( Boid_SoF &all_boids, int index_boid)
 	{
 
 
-		if (body.getPosition().y > height*(1-margin))
-			velocity.y = velocity.y - turnfactor;
-		if(body.getPosition().y < height*margin)
-			velocity.y = velocity.y + turnfactor;
-		if(body.getPosition().x > width*(1-margin))
-			velocity.x = velocity.x - turnfactor;
-		if(body.getPosition().x < width*margin)
-			velocity.x = velocity.x + turnfactor;
+		if (all_boids.positions[index_boid*2+1] > height*(1-margin))
+			all_boids.velocities[index_boid*2+1] = all_boids.velocities[index_boid*2+1] - turnfactor;
+		if(all_boids.positions[index_boid*2+1] < height*margin)
+			all_boids.velocities[index_boid*2+1] = all_boids.velocities[index_boid*2+1] + turnfactor;
+		if(all_boids.positions[index_boid*2] > width*(1-margin))
+			all_boids.velocities[index_boid*2] = all_boids.velocities[index_boid*2] - turnfactor;
+		if(all_boids.positions[index_boid*2] < width*margin)
+			all_boids.velocities[index_boid*2] = all_boids.velocities[index_boid*2] + turnfactor;
 
 	}
 
 	// Rule 1: alignment
-	sf::Vector2f Flock::alignment(const sf::CircleShape& body , const sf::Vector2f& velocity , int pos_boid)
+	std::array<float,2> Flock::alignment(const float px, const float py, const float vx, const float vy   , int index_boid)
 	{
-		sf::Vector2f v = sf::Vector2f(0.f, 0.f);
+		float temp_vx = 0;
+		float temp_vy = 0;
 		int neighbors = 0;
 
-		for (int i =0 ; i<all_boids.bodies.size(); i++)
+		for (int i =0 ; i<nBoids; i++)
 		{
-			if (utility::distance(all_boids.bodies[i].getPosition(), body.getPosition())< visualRange && i != pos_boid)
+			float distance = utility::distance(px, py, all_boids.positions[i*2], all_boids.positions[i*2+1]);
+			if (distance < visualRange && i != index_boid)
 			{
-				v += all_boids.velocities[i];
+				temp_vx += all_boids.velocities[i*2];
+				temp_vy += all_boids.velocities[i*2+1];
 				neighbors++;
 			}
 		}
 
 		if (neighbors == 0)
 		{
-			return sf::Vector2f(0.f, 0.f);
+			return {0.f, 0.f} ;
 		}
 
 		// Direction vector to nearby boids
-		v /= static_cast<float>(neighbors);
-		v = (v-velocity )*matchingFactor;
-
-		return v;
+		temp_vx /= neighbors;
+		temp_vy /= neighbors;
+		temp_vx = (temp_vx - vx )*matchingFactor;
+		temp_vy = (temp_vy - vy )*matchingFactor;
+		return {temp_vx, temp_vy} ;
 	}
 
 
-	sf::Vector2f Flock::cohesion(const sf::CircleShape& body , int pos_boid)
+	std::array<float,2>  Flock::cohesion(float px, float py  , int index_boid)
 		{
-			sf::Vector2f p = sf::Vector2f(0.f, 0.f);
-			sf::Vector2f l = sf::Vector2f(0.f, 0.f);
+			float temp_px = 0;
+			float temp_py = 0;
 			int neighbors = 0;
 
-			for (int i =0 ; i<all_boids.bodies.size(); i++)
+			for (int i =0 ; i<nBoids; i++)
 			{
-				if (utility::distance(all_boids.bodies[i].getPosition(), body.getPosition())< visualRange && i != pos_boid )
+				float distance = utility::distance(px, py, all_boids.positions[i*2], all_boids.positions[i*2+1]);
+				if(distance < visualRange && i != index_boid)
 				{
-					p += all_boids.bodies[i].getPosition();
+					temp_px += all_boids.positions[i*2];
+					temp_py += all_boids.positions[i*2+1];
 					neighbors++;
 				}
 			}
 
 			if (neighbors == 0)
 			{
-				return sf::Vector2f(0.f, 0.f);
+				return {0.f, 0.f};
 			}
 
 			// Direction vector towards the center of mass
-			p /= static_cast<float>(neighbors);
-			l = (p- body.getPosition())*centeringFactor;
+			temp_px /= neighbors;
+			temp_py /= neighbors;
+
+			temp_px = (temp_px- px)*centeringFactor;
+			temp_py = (temp_py- py)*centeringFactor;
 
 
-			return l;
+			return {temp_px, temp_py};
 		}
 
 
 
 	// Rule 3: separation
-	sf::Vector2f Flock::separation(const sf::CircleShape& body , int pos_boid)
+	std::array<float,2>  Flock::separation(float px, float py, int index_boid)
 	{
-		sf::Vector2f v = sf::Vector2f(0.f, 0.f);
+		float temp_vx = 0;
+		float temp_vy = 0;
 		int neighbors = 0;
 
-		for (int i =0 ; i<all_boids.bodies.size(); i++)
+		for (int i =0 ; i<nBoids; i++)
 		{
-			if (utility::distance(body.getPosition(), all_boids.bodies[i].getPosition())<protectedRange && i != pos_boid)
+			float distance = utility::distance(px, py, all_boids.positions[i*2], all_boids.positions[i*2+1]);
+			if (distance <protectedRange && i != index_boid)
 			{
 
-					v +=  body.getPosition() - all_boids.bodies[i].getPosition();
+					temp_vx +=  px - all_boids.positions[i*2];
+					temp_vy +=  py - all_boids.positions[i*2+1];
+
 					neighbors++;
 				}
 			}
@@ -257,11 +287,11 @@ void Flock::updateTest()
 
 		if (neighbors == 0)
 		{
-			return sf::Vector2f(0.f, 0.f);
+			return {0.f, 0.f};
 		}
-		v *= avoidFactor;
-
-		return v;
+		temp_vx *= avoidFactor;
+		temp_vy *= avoidFactor;
+		return {temp_vx, temp_vy};
 	}
 
 
