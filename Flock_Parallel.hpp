@@ -33,6 +33,7 @@ namespace parallel {
         void pollEvents();
         void update();
         void updateTest();
+        void updateFast();
         void checkBoundaries(Boid_SoF  &all_boids, int index_boid);
         void createBoids();
         // Rules

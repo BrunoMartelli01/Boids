@@ -33,6 +33,7 @@ const float minspeed = 3;
         void render();
         void pollEvents();
         void update();
+        void updateFast();
         void updateTest();
         void checkBoundaries(Boid& boid);
         void createBoids();

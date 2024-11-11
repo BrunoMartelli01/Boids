@@ -27,7 +27,7 @@ using namespace parallel;
 		{
 			pollEvents();
 			//updateTest();
-			update();
+			updateFast();
 			render();
 		}
 	}
@@ -37,7 +37,7 @@ using namespace parallel;
 		double time = 0.0;
 		for (int i = 0; i < number_of_iteration; i++) {
 			double start =  omp_get_wtime();
-			update();
+			updateFast();
 			double end =  omp_get_wtime();
 			time +=  end - start;
 		}
@@ -112,6 +112,97 @@ void Flock::createBoids()
 			std::array<float,2 > s = separation(px,py , i);
 			all_boids.velocities[i*2] += c[0] + a[0] + s[0];
 			all_boids.velocities[i*2+1] += c[1] + a[1] + s[1];
+
+
+			float spd =utility::length(all_boids.velocities[i*2],all_boids.velocities[i*2+1]);
+			if (spd>maxspeed) {
+				all_boids.velocities[i*2] = all_boids.velocities[i*2]*maxspeed/spd;
+
+				all_boids.velocities[i*2+1] = all_boids.velocities[i*2+1]*maxspeed/spd;
+			}
+			if(spd<minspeed) {
+				all_boids.velocities[i*2] = all_boids.velocities[i*2]*minspeed/spd;
+				all_boids.velocities[i*2+1] = all_boids.velocities[i*2+1]*minspeed/spd;
+			}
+
+
+			checkBoundaries( all_boids,  i);
+
+			all_boids.positions[i*2]= px + all_boids.velocities[i*2];
+			all_boids.positions[i*2+1]= py + all_boids.velocities[i*2+1];
+
+		}
+	}
+
+void Flock::updateFast() {
+		// Update boids
+#pragma omp parallel for
+		for (int i  = 0; i < nBoids; i++)//posso usare nboids perché ho tolto la possibilità di inserirli a mano
+		{
+			// Add the rules to the velocity of the boid
+			float px = all_boids.positions[i*2];
+			float py = all_boids.positions[i*2+1];
+			float vx = all_boids.velocities[i*2];
+			float vy = all_boids.velocities[i*2+1];
+
+			float temp_vx = 0;
+			float temp_vy = 0;
+			float temp_px = 0;
+			float temp_py = 0;
+			float temp_vx_s = 0;
+			float temp_vy_s = 0;
+
+			int neighbors = 0;
+
+			int neighbors_s = 0;
+			for(int k =0 ; k<nBoids; k++) {
+				if(i != k) {
+					float distance = utility::distance(px, py, all_boids.positions[k*2], all_boids.positions[k*2+1]);
+					if (distance < visualRange)
+					{
+
+						temp_vx += all_boids.velocities[k*2];
+						temp_vy += all_boids.velocities[k*2+1];
+						temp_px += all_boids.positions[k*2];
+						temp_py += all_boids.positions[k*2+1];
+						neighbors++;
+
+						if(distance < protectedRange) {
+							temp_vx_s +=  px - all_boids.positions[k*2];
+							temp_vy_s +=  py - all_boids.positions[k*2+1];
+							neighbors_s++;
+						}
+
+					}
+
+
+
+
+				}
+			}
+
+
+			if (neighbors != 0)
+			{
+				temp_vx /= neighbors;
+				temp_vy /= neighbors;
+				temp_vx = (temp_vx - vx )*matchingFactor;
+				temp_vy = (temp_vy - vy )*matchingFactor;
+				temp_px /= neighbors;
+				temp_py /= neighbors;
+				temp_px = (temp_px- px)*centeringFactor;
+				temp_py = (temp_py- py)*centeringFactor;
+			}
+			if (neighbors_s != 0)
+			{
+				temp_vx_s /= neighbors_s;
+				temp_vy_s /= neighbors_s;
+				temp_vx_s *= avoidFactor;
+				temp_vy_s *= avoidFactor;
+			}
+
+			all_boids.velocities[i*2] += temp_vx + temp_px + temp_vx_s;
+			all_boids.velocities[i*2+1] += temp_vy + temp_py + temp_vy_s;
 
 
 			float spd =utility::length(all_boids.velocities[i*2],all_boids.velocities[i*2+1]);
