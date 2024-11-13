@@ -44,7 +44,6 @@ using namespace sq;
 			time +=  end - start;
 		}
 		time /= number_of_iteration;
-		std::cout << "Mean time for update with no parallelization : " << time << std::endl;
 		return time;
 	}
 

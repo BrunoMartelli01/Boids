@@ -25,7 +25,9 @@ namespace parallel {
         Flock(float percent_of_screen, int numBoids = 500);
         void run();
         double test(int number_of_iteration);
-
+        double testFast(int number_of_iteration) ;
+        int numthreads = 1;
+        int nBoids= 500;
     private:
         int width;
         int height;
@@ -34,6 +36,7 @@ namespace parallel {
         void update();
         void updateTest();
         void updateFast();
+
         void checkBoundaries(Boid_SoF  &all_boids, int index_boid);
         void createBoids();
         // Rules
@@ -52,6 +55,7 @@ namespace parallel {
 
         float avoidFactor = 0.05;
         float margin = 0.2;
-        int nBoids;
+
+
     };
 }

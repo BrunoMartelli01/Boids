@@ -37,14 +37,27 @@ using namespace parallel;
 		double time = 0.0;
 		for (int i = 0; i < number_of_iteration; i++) {
 			double start =  omp_get_wtime();
+			update();
+			double end =  omp_get_wtime();
+			time +=  end - start;
+		}
+		time /= number_of_iteration;
+		return time;
+	}
+double Flock::testFast(int number_of_iteration) {
+		m_window.close();
+		createBoids();
+		double time = 0.0;
+		for (int i = 0; i < number_of_iteration; i++) {
+			double start =  omp_get_wtime();
 			updateFast();
 			double end =  omp_get_wtime();
 			time +=  end - start;
 		}
 		time /= number_of_iteration;
-		std::cout << "Mean time for update with parallelization : " << time << std::endl;
 		return time;
 	}
+
 
 
 	void Flock::pollEvents()
@@ -99,7 +112,7 @@ void Flock::createBoids()
 
 	void Flock::update() {
 		// Update boids
-#pragma omp parallel for
+#pragma omp parallel for num_threads(Flock::numthreads)
 		for (int i  = 0; i < nBoids; i++)//posso usare nboids perché ho tolto la possibilità di inserirli a mano
 		{
 			// Add the rules to the velocity of the boid
@@ -136,7 +149,7 @@ void Flock::createBoids()
 
 void Flock::updateFast() {
 		// Update boids
-#pragma omp parallel for
+#pragma omp parallel for num_threads(Flock::numthreads)
 		for (int i  = 0; i < nBoids; i++)//posso usare nboids perché ho tolto la possibilità di inserirli a mano
 		{
 			// Add the rules to the velocity of the boid
