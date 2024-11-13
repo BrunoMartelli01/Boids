@@ -26,6 +26,8 @@ namespace parallel {
         void run();
         double test(int number_of_iteration);
         double testFast(int number_of_iteration) ;
+        double testFastSequential(int number_of_iteration);
+
         int numthreads = 1;
         int nBoids= 500;
     private:
@@ -36,7 +38,7 @@ namespace parallel {
         void update();
         void updateTest();
         void updateFast();
-
+        void updateFastSequential();
         void checkBoundaries(Boid_SoF  &all_boids, int index_boid);
         void createBoids();
         // Rules

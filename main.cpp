@@ -13,6 +13,11 @@ for(int i = 0; i < nboids_size; i++) {
     sq::Flock flock(0.8, nboids[i]);
     double time_sequential = flock.test(1000);
 
+    srand(10);
+    parallel::Flock flock_fast(0.8, nboids[i]);
+    double time_sequential_fast = flock_fast.test(1000);
+
+
     for(int k =0 ; k < num_threads_size; k++) {
 
         srand(10);
@@ -28,9 +33,14 @@ for(int i = 0; i < nboids_size; i++) {
 
         std::cout << "number of threads: " << num_threads[k] <<  " nBoids: "<<nboids[i]<<std::endl;
         std::cout << "sequential time: " << time_sequential << std::endl;
+        std::cout << "sequential fast time: " << time_sequential_fast << std::endl;
         std::cout << "parallel time: " << time_parallel << std::endl;
-        std::cout << "parallel fast time: " << time_parallel_fast << std::endl;
+        std::cout << "parallel fast time: " << time_parallel_fast << std::endl<<std::endl;
 
+        double speedup_to_fast = time_sequential / time_sequential_fast;
+        std::cout <<"speedup sequential -> sequential_fast: "<< speedup_to_fast << std::endl;
+        double sequential_to_parallel_fast = time_sequential_fast / time_parallel_fast;
+        std::cout <<"speedup sequential_fast -> parallel_fast: "<< sequential_to_parallel_fast << std::endl;
 
         double speedup_to_parallel = time_sequential / time_parallel;
         std::cout <<"speedup sequential -> parallel: "<< speedup_to_parallel << std::endl;
@@ -39,9 +49,9 @@ for(int i = 0; i < nboids_size; i++) {
         std::cout <<"speedup parallel -> fast: "<< speedup_to_parallel_fast << std::endl;
 
         double speedup_to_sequential_fast = time_sequential / time_parallel_fast;
-        std::cout <<"speedup sequential -> fast: "<< speedup_to_sequential_fast << std::endl<<std::endl;
+        std::cout <<"speedup sequential -> fast: "<< speedup_to_sequential_fast << std::endl<<std::endl<<std::endl<<std::endl;
     }
-    std::cout<<"----------------------------------------------------------------------------------------------------------"<<std::endl;
+    std::cout<<"----------------------------------------------------------------------------------------------------------"<<std::endl<<std::endl<<std::endl<<std::endl;
 }
     return 0;
 }
