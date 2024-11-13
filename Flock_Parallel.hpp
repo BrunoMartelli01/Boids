@@ -28,7 +28,7 @@ namespace parallel {
         double testFast(int number_of_iteration) ;
         double testFastSequential(int number_of_iteration);
 
-        int numthreads = 1;
+        int numthreads = 16;
         int nBoids= 500;
     private:
         int width;
@@ -50,7 +50,7 @@ namespace parallel {
         sf::RenderWindow m_window;
         Boid_SoF all_boids;
         int visualRange = 75;
-        float turnfactor = 0.2;
+        float turnfactor = 0.15;
         float centeringFactor = 0.0005;
         float matchingFactor = 0.05;
         float protectedRange = 20;
