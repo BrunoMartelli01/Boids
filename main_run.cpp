@@ -11,7 +11,8 @@ int main() {
     //flock.run();
 
 
-    parallel::Flock flock_parallel(0.8);
+    parallel::Flock flock_parallel(0.8, 10);
+
     flock_parallel.run();
 
     return 0;

@@ -37,12 +37,15 @@ using namespace sq;
 		m_window.close();
 		createBoids();
 		double time = 0.0;
+		double start =  omp_get_wtime();
 		for (int i = 0; i < number_of_iteration; i++) {
-			double start =  omp_get_wtime();
+
 			update();
-			double end =  omp_get_wtime();
-			time +=  end - start;
+
 		}
+
+		double end =  omp_get_wtime();
+		time +=  end - start;
 		time /= number_of_iteration;
 		return time;
 	}
@@ -88,19 +91,9 @@ void Flock::createBoids()
 
 
 
-	void Flock::update()
-	{
-//#pragma omp parallel for
-		// Update boids
-		for (auto& boid : all_boids)
-		{
-
-
-			// Add the rules to the velocity of the boid
+	void Flock::update(){
+		for (auto& boid : all_boids){
 			boid.velocity += cohesion(boid) + alignment(boid) + separation(boid);
-
-
-
 			float spd =utility::length(boid.velocity);
 			if (spd>maxspeed) {
 				boid.velocity = boid.velocity*maxspeed/spd;
@@ -109,11 +102,8 @@ void Flock::createBoids()
 				boid.velocity = boid.velocity*minspeed/spd;
 			}
 			sf::Vector2f p = boid.body.getPosition();
-
 			checkBoundaries(boid);
-
 			boid.body.setPosition(p +boid.velocity);
-
 		}
 	}
 void Flock::updateTest()
@@ -121,11 +111,9 @@ void Flock::updateTest()
 
 		std::vector<sf::Vector2<float>> v;
 
-		int i = 0;	// Update boids
+		int i = 0;
 		for (auto& boid : all_boids)
 		{
-
-			// Add the rules to the velocity of the boid
 			v.push_back(boid.velocity + cohesion(boid) + alignment(boid) + separation(boid));
 
 			float spd =utility::length(v[i]);
@@ -152,8 +140,6 @@ void Flock::updateTest()
 	void Flock::render()
 	{
 		m_window.clear();
-
-		// Draw boids
 		for (const auto& boid : all_boids)
 		{
 			m_window.draw(boid.body);
@@ -165,7 +151,6 @@ void Flock::updateTest()
 
 	void Flock::checkBoundaries(Boid& boid)
 	{
-		// Reset position of a boid if it's outside the window
 		if (boid.body.getPosition().y > height*(1-margin))
 			boid.velocity.y = boid.velocity.y - turnfactor;
 		if(boid.body.getPosition().y < height*margin)
@@ -177,7 +162,7 @@ void Flock::updateTest()
 
 	}
 
-	// Rule 1: alignment
+
 	sf::Vector2f Flock::alignment(const Boid& boid)
 	{
 		sf::Vector2f v = sf::Vector2f(0.f, 0.f);
@@ -185,8 +170,6 @@ void Flock::updateTest()
 
 		for (const auto& otherBoid : all_boids)
 		{
-			// if(&boid == &targetBoid)
-			// 	std::cout<<"boid: " << boid.body.getPosition().x<< "target: "<<targetBoid.body.getPosition().x<< std::endl;
 			if (utility::distance(otherBoid.body.getPosition(), boid.body.getPosition())< visualRange && &otherBoid != &boid)
 			{
 				v += otherBoid.velocity;
@@ -198,8 +181,6 @@ void Flock::updateTest()
 		{
 			return sf::Vector2f(0.f, 0.f);
 		}
-
-		// Direction vector to nearby boids
 		v /= static_cast<float>(neighbors);
 		v = (v-boid.velocity )*matchingFactor;
 
@@ -227,7 +208,6 @@ void Flock::updateTest()
 				return sf::Vector2f(0.f, 0.f);
 			}
 
-			// Direction vector towards the center of mass
 			p /= static_cast<float>(neighbors);
 			l = (p- boid.body.getPosition())*centeringFactor;
 
@@ -236,8 +216,6 @@ void Flock::updateTest()
 		}
 
 
-
-	// Rule 3: separation
 	sf::Vector2f Flock::separation(const Boid& boid)
 	{
 		sf::Vector2f v = sf::Vector2f(0.f, 0.f);

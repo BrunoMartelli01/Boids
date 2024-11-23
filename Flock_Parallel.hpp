@@ -9,7 +9,7 @@ namespace parallel {
     const float minspeed = 3;
 
 #define BOID_SIZE 7.f
-    struct Boid_SoF
+    struct Boid_SoA
     {
         std::vector<float> positions;
         std::vector<float> velocities;
@@ -36,10 +36,9 @@ namespace parallel {
         void render();
         void pollEvents();
         void update();
-        void updateTest();
         void updateFast();
         void updateFastSequential();
-        void checkBoundaries(Boid_SoF  &all_boids, int index_boid);
+        void checkBoundaries(Boid_SoA  &all_boids, int index_boid);
         void createBoids();
         // Rules
         std::array<float,2>  alignment( float px,  float py,  float vx,  float vy   , int index_boid);
@@ -48,7 +47,7 @@ namespace parallel {
 
 
         sf::RenderWindow m_window;
-        Boid_SoF all_boids;
+        Boid_SoA all_boids;
         int visualRange = 75;
         float turnfactor = 0.15;
         float centeringFactor = 0.0005;
